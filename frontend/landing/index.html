@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI-powered race intelligence platform transforming Formula 1 operations" />
+  <title>LAPPED — AI Race Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <canvas id="webgl-canvas"></canvas>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">LAPPED</div>
+      <nav class="nav">
+        <a href="#hero">Home</a>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+      </nav>
+      <a href="#contact" class="btn-contact">Contact</a>
+    </div>
+  </header>
+
+  <main>
+    <section id="hero" class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          <span>Reinventing race logistics</span>
+          <span>through AI-powered intelligence</span>
+        </h1>
+        <p class="hero-subtitle">Transform manual race operations into connected, intelligent missions</p>
+      </div>
+      <div class="scroll-indicator">
+        <span class="scroll-line"></span>
+        <span class="scroll-text">Scroll</span>
+      </div>
+    </section>
+
+    <section id="text-reveal" class="text-reveal-section">
+      <p class="reveal-text" id="animated-text"></p>
+    </section>
+
+    <section id="features" class="features">
+      <div class="container">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <span class="feature-number">01</span>
+            <h3 class="feature-title">Live Telemetry</h3>
+            <p class="feature-desc">Real-time data transformation turning every lap, sector, and tire signal into actionable intelligence.</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-number">02</span>
+            <h3 class="feature-title">Strategic Decisions</h3>
+            <p class="feature-desc">AI-powered scenario simulation for undercut windows, safety car strategies, and race-critical calls.</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-number">03</span>
+            <h3 class="feature-title">Unified Operations</h3>
+            <p class="feature-desc">One platform connecting strategists, engineers, and race control in perfect synchronization.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cta" class="cta-section">
+      <div class="container">
+        <h2 class="cta-title">Ready to transform your race operations?</h2>
+        <a href="#contact" class="btn-primary">Book a Demo</a>
+      </div>
+    </section>
+  </main>
+
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <h2 class="loading-title">LAPPED</h2>
+      <div class="loading-bar">
+        <div class="loading-progress" id="loading-progress"></div>
+      </div>
+      <p class="loading-text" id="loading-text">Initializing...</p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: var(--border-width) solid var(--color-border);
+  padding-bottom: 16px;
+}
+
+.tab,
+.tabActive {
+  padding: 8px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.tabActive {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-primary-blue);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.raceName {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.location {
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.date {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.viewButton {
+  width: 100%;
+  padding: 10px;
+  background: var(--color-primary-blue);
+  color: var(--color-text-primary);
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  transition: all var(--transition);
+}
+
+.viewButton:hover {
+  background: var(--color-light-blue);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

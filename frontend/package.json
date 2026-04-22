@@ -1,0 +1,30 @@
+{
+  "name": "lapped-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:landing": "cd landing && vite",
+    "build": "tsc && vite build",
+    "build:landing": "cd landing && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "lucide-react": "^0.344.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.22.0",
+    "recharts": "^2.12.0",
+    "three": "^0.160.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
+    "@types/three": "^0.160.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.4"
+  }
+}

@@ -1,0 +1,85 @@
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--color-surface);
+  border-right: var(--border-width) solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  padding: 0 24px 32px;
+  color: var(--color-text-primary);
+}
+
+.nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 12px;
+}
+
+.navItem,
+.navItemActive {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  transition: all var(--transition);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+}
+
+.navItem:hover {
+  color: var(--color-text-primary);
+  background: var(--color-surface-hover);
+}
+
+.navItemActive {
+  color: var(--color-text-primary);
+  background: var(--color-surface-hover);
+}
+
+.navItemActive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-primary-red);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

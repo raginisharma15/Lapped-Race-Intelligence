@@ -1,0 +1,557 @@
+# 🏗️ LAPPED Architecture
+
+## System Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         USER BROWSER                             │
+│                     http://localhost:5173                        │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+                    ▼                       ▼
+        ┌───────────────────┐   ┌───────────────────┐
+        │  Landing Page (/) │   │  Dashboard (/*)   │
+        │   (3D Three.js)   │   │  (React + TS)     │
+        └───────────────────┘   └─────────┬─────────┘
+                │                         │
+                │ postMessage             │ HTTP/REST
+                │ 'navigate-to-dashboard' │ axios
+                │                         │
+                └────────────┬────────────┘
+                             │
+                             ▼
+                ┌────────────────────────┐
+                │   React Router         │
+                │   - /                  │
+                │   - /dashboard         │
+                │   - /report/:id        │
+                │   - /compare           │
+                │   - /history           │
+                └────────────────────────┘
+                             │
+                             │ API Calls
+                             │ (5s polling)
+                             ▼
+                ┌────────────────────────┐
+                │   FastAPI Backend      │
+                │   localhost:8000       │
+                │   + CORS Middleware    │
+                └────────────┬───────────┘
+                             │
+                ┌────────────┼────────────┐
+                │            │            │
+                ▼            ▼            ▼
+        ┌──────────┐  ┌──────────┐  ┌──────────┐
+        │ OpenF1   │  │  Groq    │  │ FastF1   │
+        │   API    │  │   LLM    │  │  Cache   │
+        └──────────┘  └──────────┘  └──────────┘
+```
+
+## Component Breakdown
+
+### 1. Frontend Layer
+
+#### Landing Page (`frontend/public/landing.html`)
+```
+┌─────────────────────────────────────┐
+│         Landing Page                │
+│  ┌───────────────────────────────┐  │
+│  │  Three.js 3D Scene            │  │
+│  │  - F1 Car Model (106MB)       │  │
+│  │  - Scroll Animations (GSAP)   │  │
+│  │  - Camera Movement            │  │
+│  └───────────────────────────────┘  │
+│                                     │
+│  ┌───────────────────────────────┐  │
+│  │  Content Sections             │  │
+│  │  - Hero                       │  │
+│  │  - Text Reveal                │  │
+│  │  - Features                   │  │
+│  │  - CTA                        │  │
+│  └───────────────────────────────┘  │
+│                                     │
+│  [Enter Dashboard →] Button         │
+│         │                           │
+│         │ postMessage               │
+│         ▼                           │
+│  window.parent.postMessage(         │
+│    'navigate-to-dashboard'          │
+│  )                                  │
+└─────────────────────────────────────┘
+```
+
+#### React Dashboard (`frontend/src/`)
+```
+┌─────────────────────────────────────────────────────┐
+│              React Application                      │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  App.tsx (Router)                             │  │
+│  │  ┌─────────────────────────────────────────┐  │  │
+│  │  │  Route: /                               │  │  │
+│  │  │  Component: Landing (iframe wrapper)    │  │  │
+│  │  └─────────────────────────────────────────┘  │  │
+│  │  ┌─────────────────────────────────────────┐  │  │
+│  │  │  Route: /dashboard                      │  │  │
+│  │  │  Component: Dashboard                   │  │  │
+│  │  │  - Live Telemetry                       │  │  │
+│  │  │  - Driver Standings                     │  │  │
+│  │  │  - Lap Charts                           │  │  │
+│  │  │  - Alerts Panel                         │  │  │
+│  │  └─────────────────────────────────────────┘  │  │
+│  │  ┌─────────────────────────────────────────┐  │  │
+│  │  │  Route: /report/:sessionKey             │  │  │
+│  │  │  Component: RaceReport                  │  │  │
+│  │  │  - AI Summary                           │  │  │
+│  │  │  - Key Moments                          │  │  │
+│  │  │  - Driver Reports                       │  │  │
+│  │  └─────────────────────────────────────────┘  │  │
+│  │  ┌─────────────────────────────────────────┐  │  │
+│  │  │  Route: /compare                        │  │  │
+│  │  │  Component: DriverComparison            │  │  │
+│  │  └─────────────────────────────────────────┘  │  │
+│  │  ┌─────────────────────────────────────────┐  │  │
+│  │  │  Route: /history                        │  │  │
+│  │  │  Component: RaceHistory                 │  │  │
+│  │  └─────────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  Layout                                       │  │
+│  │  ┌─────────┐  ┌──────────────────────────┐   │  │
+│  │  │ Sidebar │  │  TopBar                  │   │  │
+│  │  │         │  └──────────────────────────┘   │  │
+│  │  │ - Home  │  ┌──────────────────────────┐   │  │
+│  │  │ - Report│  │                          │   │  │
+│  │  │ - Compare  │  Content (<Outlet />)    │   │  │
+│  │  │ - History  │                          │   │  │
+│  │  │         │  │                          │   │  │
+│  │  └─────────┘  └──────────────────────────┘   │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  Custom Hooks                                 │  │
+│  │  - useLiveData (5s polling)                   │  │
+│  │  - useRaceReport (on-demand)                  │  │
+│  │  - useAlerts (10s polling)                    │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  API Clients (axios)                          │  │
+│  │  - client.ts (base config)                    │  │
+│  │  - telemetry.ts                               │  │
+│  │  - history.ts                                 │  │
+│  │  - alerts.ts                                  │  │
+│  └───────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
+```
+
+### 2. Backend Layer
+
+#### FastAPI Application (`app/main.py`)
+```
+┌─────────────────────────────────────────────────────┐
+│              FastAPI Backend                        │
+│              localhost:8000                         │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  Middleware                                   │  │
+│  │  - CORS (allow all origins)                   │  │
+│  │  - Exception Handler                          │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  Routes (/api/v1)                             │  │
+│  │                                               │  │
+│  │  Telemetry Router                             │  │
+│  │  ├─ GET /telemetry/{key}/laps                 │  │
+│  │  └─ GET /telemetry/{key}/driver/{num}         │  │
+│  │                                               │  │
+│  │  History Router                               │  │
+│  │  ├─ GET /history/{year}/races                 │  │
+│  │  └─ GET /history/{key}/report                 │  │
+│  │                                               │  │
+│  │  Analysis Router                              │  │
+│  │  ├─ GET /analysis/{key}/anomalies             │  │
+│  │  ├─ GET /analysis/{key}/tire-degradation      │  │
+│  │  └─ GET /analysis/{key}/sectors               │  │
+│  │                                               │  │
+│  │  Alerts Router                                │  │
+│  │  └─ GET /alerts/{key}                         │  │
+│  │                                               │  │
+│  │  Summary Router                               │  │
+│  │  ├─ GET /summary/{key}                        │  │
+│  │  └─ POST /summary/{key}/refresh               │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  Services                                     │  │
+│  │  - data_service.py (OpenF1 + FastF1)          │  │
+│  │  - pipeline.py (data processing)              │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  AI Module                                    │  │
+│  │  - summarizer.py (Groq LLM)                   │  │
+│  │  - Model: llama-3.3-70b-versatile             │  │
+│  └───────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
+```
+
+### 3. External Services
+
+```
+┌─────────────────────────────────────────────────────┐
+│           External Data Sources                     │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  OpenF1 API                                   │  │
+│  │  https://api.openf1.org/v1                    │  │
+│  │  - Live telemetry                             │  │
+│  │  - Session data                               │  │
+│  │  - Driver info                                │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  Groq API                                     │  │
+│  │  https://api.groq.com                         │  │
+│  │  - AI race summaries                          │  │
+│  │  - Natural language generation                │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  FastF1 Library                               │  │
+│  │  - Historical race data                       │  │
+│  │  - Cached locally                             │  │
+│  └───────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
+```
+
+## Data Flow
+
+### 1. Landing Page → Dashboard Navigation
+
+```
+User clicks "Enter Dashboard →"
+    │
+    ├─ landing.html: window.navigateToDashboard()
+    │
+    ├─ postMessage('navigate-to-dashboard', '*')
+    │
+    ├─ Landing.tsx: receives message
+    │
+    ├─ navigate('/dashboard')
+    │
+    └─ React Router: renders Dashboard component
+```
+
+### 2. Dashboard → Backend API Call
+
+```
+Dashboard component mounts
+    │
+    ├─ useLiveData hook initializes
+    │
+    ├─ useEffect triggers
+    │
+    ├─ getTelemetryLaps(sessionKey) called
+    │
+    ├─ axios.get('/api/v1/telemetry/latest/laps')
+    │
+    ├─ Request sent to localhost:8000
+    │
+    ├─ FastAPI receives request
+    │
+    ├─ Telemetry router handles request
+    │
+    ├─ data_service.py fetches from OpenF1
+    │
+    ├─ Data processed and returned
+    │
+    ├─ Response sent back to frontend
+    │
+    ├─ axios receives response
+    │
+    ├─ State updated with new data
+    │
+    └─ Component re-renders with data
+```
+
+### 3. Real-Time Updates (Polling)
+
+```
+┌─────────────────────────────────────┐
+│  useLiveData Hook                   │
+│                                     │
+│  useEffect(() => {                  │
+│    const fetchData = async () => {  │
+│      const data = await getTelemetry│
+│      setLaps(data)                  │
+│    }                                │
+│                                     │
+│    fetchData() // Initial           │
+│                                     │
+│    const interval = setInterval(    │
+│      fetchData,                     │
+│      5000 // Poll every 5 seconds   │
+│    )                                │
+│                                     │
+│    return () => clearInterval(...)  │
+│  }, [sessionKey])                   │
+└─────────────────────────────────────┘
+```
+
+## File System Structure
+
+```
+LAPPED/
+│
+├── Backend
+│   ├── app/
+│   │   ├── main.py              # FastAPI app entry
+│   │   ├── routes/              # API endpoints
+│   │   │   ├── telemetry.py
+│   │   │   ├── history.py
+│   │   │   ├── analysis.py
+│   │   │   ├── alerts.py
+│   │   │   └── summary.py
+│   │   ├── services/            # Business logic
+│   │   │   ├── data_service.py
+│   │   │   └── pipeline.py
+│   │   └── ai/                  # AI module
+│   │       └── summarizer.py
+│   ├── config.py                # Configuration
+│   ├── requirements.txt         # Python deps
+│   └── .env                     # Environment vars
+│
+├── Frontend
+│   ├── landing/                 # Separate 3D landing
+│   │   ├── src/
+│   │   │   ├── main.js         # Three.js scene
+│   │   │   └── style.css
+│   │   ├── public/models/      # 3D models (106MB)
+│   │   └── index.html
+│   │
+│   ├── src/                     # React dashboard
+│   │   ├── api/                 # API clients
+│   │   │   ├── client.ts       # Axios config
+│   │   │   ├── telemetry.ts
+│   │   │   ├── history.ts
+│   │   │   └── alerts.ts
+│   │   ├── components/
+│   │   │   ├── layout/
+│   │   │   │   ├── Layout.tsx
+│   │   │   │   ├── Sidebar.tsx
+│   │   │   │   └── TopBar.tsx
+│   │   │   └── ui/
+│   │   │       └── Card.tsx
+│   │   ├── hooks/
+│   │   │   ├── useLiveData.ts
+│   │   │   ├── useRaceReport.ts
+│   │   │   └── useAlerts.ts
+│   │   ├── pages/
+│   │   │   ├── Landing.tsx     # Iframe wrapper
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── RaceReport.tsx
+│   │   │   ├── DriverComparison.tsx
+│   │   │   └── RaceHistory.tsx
+│   │   ├── types/
+│   │   │   └── index.ts
+│   │   ├── styles/
+│   │   │   ├── variables.css
+│   │   │   └── global.css
+│   │   ├── App.tsx             # Router
+│   │   └── main.tsx            # Entry
+│   │
+│   ├── public/
+│   │   ├── landing.html        # Standalone 3D
+│   │   └── models/             # 3D models copy
+│   │
+│   ├── package.json
+│   └── .env.local              # Frontend config
+│
+└── Scripts & Docs
+    ├── start.sh                # Full stack startup
+    ├── test-integration.sh     # Integration test
+    ├── README.md               # Main docs
+    ├── QUICKSTART.md           # Quick start
+    ├── INTEGRATION.md          # Integration guide
+    ├── FULLSTACK_COMPLETE.md   # Completion summary
+    ├── ARCHITECTURE.md         # This file
+    └── START_HERE.md           # Getting started
+```
+
+## Technology Stack
+
+### Frontend
+```
+React 18.3.1
+├── TypeScript 5.4.2
+├── Vite 5.1.4
+├── React Router 6.22.0
+├── Axios 1.6.7
+├── Recharts 2.12.0
+├── Lucide React 0.344.0
+└── CSS Modules
+
+Three.js (Landing)
+├── GLTFLoader
+├── DRACOLoader
+└── CDN: jsdelivr.net
+```
+
+### Backend
+```
+FastAPI
+├── Python 3.10+
+├── Pydantic
+├── httpx (async HTTP)
+├── Groq SDK
+├── FastF1
+└── OpenF1 API
+```
+
+## Port Configuration
+
+```
+┌──────────────────────────────────┐
+│  Port 5173                       │
+│  Frontend (Vite Dev Server)      │
+│  - Landing Page (/)              │
+│  - Dashboard (/dashboard)        │
+│  - All React routes              │
+└──────────────────────────────────┘
+                │
+                │ HTTP Requests
+                ▼
+┌──────────────────────────────────┐
+│  Port 8000                       │
+│  Backend (FastAPI)               │
+│  - API endpoints (/api/v1/*)     │
+│  - Interactive docs (/docs)      │
+│  - OpenAPI spec (/openapi.json)  │
+└──────────────────────────────────┘
+```
+
+## Environment Variables
+
+### Backend (`.env`)
+```bash
+GROQ_API_KEY=gsk_...              # Required
+GROQ_MODEL=llama-3.3-70b-versatile
+OPENF1_BASE_URL=https://api.openf1.org/v1
+FASTF1_CACHE_DIR=./cache/fastf1
+REPORTS_CACHE_DIR=./cache/reports
+DEFAULT_SESSION_KEY=latest
+```
+
+### Frontend (`.env.local`)
+```bash
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+## Deployment Architecture
+
+### Development
+```
+Local Machine
+├── Backend: localhost:8000
+└── Frontend: localhost:5173
+```
+
+### Production (Option 1: Separate)
+```
+Backend: api.yourdomain.com
+    ├── Railway / Render / AWS
+    └── FastAPI + Uvicorn
+
+Frontend: yourdomain.com
+    ├── Vercel / Netlify / Cloudflare
+    └── Static build (dist/)
+```
+
+### Production (Option 2: Unified)
+```
+Single Server: yourdomain.com
+    ├── FastAPI serves API at /api/*
+    └── FastAPI serves static files at /*
+```
+
+## Security Considerations
+
+### CORS
+```python
+# Currently: Allow all origins (development)
+allow_origins=["*"]
+
+# Production: Restrict to specific domains
+allow_origins=[
+    "https://yourdomain.com",
+    "https://www.yourdomain.com"
+]
+```
+
+### API Keys
+```bash
+# Never commit .env files
+# Use environment variables in production
+# Rotate keys regularly
+```
+
+### Rate Limiting
+```python
+# TODO: Add rate limiting middleware
+# Prevent API abuse
+# Protect external API quotas
+```
+
+## Performance Optimization
+
+### Frontend
+- Code splitting (React.lazy)
+- Image optimization
+- CSS Modules (scoped styles)
+- Vite build optimization
+- CDN for Three.js
+
+### Backend
+- FastF1 caching
+- Response caching (TODO: Redis)
+- Async operations (httpx)
+- Connection pooling
+- Gzip compression
+
+### 3D Models
+- Draco compression (106MB → optimized)
+- Lazy loading
+- Progressive loading
+- LOD (Level of Detail) - TODO
+
+## Monitoring & Logging
+
+### Backend
+```python
+# Current: Python logging
+logger.info("Pipeline ready")
+logger.error("Startup failed: %s", e)
+
+# TODO: Add structured logging
+# TODO: Add Sentry for error tracking
+```
+
+### Frontend
+```typescript
+// Current: Console logging
+console.error('API Error:', error)
+
+// TODO: Add error boundary
+// TODO: Add analytics (Plausible)
+```
+
+---
+
+**Architecture designed for scalability, maintainability, and performance**
+
+🏎️💨 Built for the future of race intelligence

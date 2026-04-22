@@ -1,0 +1,221 @@
+/* Initializing Screen */
+.initializing {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+}
+
+.initContent {
+  text-align: center;
+  max-width: 600px;
+  padding: 48px;
+}
+
+.initTitle {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(48px, 10vw, 80px);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  margin-bottom: 48px;
+  color: #b4ff2c;
+  text-shadow: 0 0 30px rgba(180, 255, 44, 0.5);
+  animation: initPulse 2s ease-in-out infinite;
+}
+
+@keyframes initPulse {
+  0%, 100% {
+    opacity: 0.8;
+    text-shadow: 0 0 30px rgba(180, 255, 44, 0.5);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 50px rgba(180, 255, 44, 0.8);
+  }
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #b4ff2c 0%, #00ff88 100%);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 20px rgba(180, 255, 44, 0.6);
+}
+
+.statusText {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  animation: statusBlink 1s ease-in-out infinite;
+}
+
+@keyframes statusBlink {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Landing Page */
+.landing {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+  animation: landingFadeIn 0.8s ease-out;
+}
+
+@keyframes landingFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(180, 255, 44, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(180, 255, 44, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 800px;
+  padding: 48px;
+  animation: contentFadeIn 1s ease-out;
+}
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(64px, 12vw, 120px);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #b4ff2c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleGlow 3s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px rgba(180, 255, 44, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 40px rgba(180, 255, 44, 0.6));
+  }
+}
+
+.subtitle {
+  font-size: clamp(20px, 3vw, 32px);
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  animation: contentFadeIn 1s ease-out 0.2s both;
+}
+
+.description {
+  font-size: clamp(16px, 2vw, 20px);
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 48px;
+  line-height: 1.6;
+  animation: contentFadeIn 1s ease-out 0.4s both;
+}
+
+.ctaButton {
+  padding: 18px 48px;
+  background: #E10600;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 2px solid #E10600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  animation: contentFadeIn 1s ease-out 0.6s both, buttonPulse 2s ease-in-out 2s infinite;
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(225, 6, 0, 0.7);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px 10px rgba(225, 6, 0, 0);
+  }
+}
+
+.ctaButton:hover {
+  background: #ffffff;
+  color: #E10600;
+  border-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(225, 6, 0, 0.4);
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+}
