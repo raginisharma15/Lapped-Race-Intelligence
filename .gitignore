@@ -1,0 +1,29 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# Node
+node_modules/
+dist/
+.env.local
+
+# OS
+.DS_Store
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+
+# Cache
+cache/
+*.log
+
+# Build
+build/
+*.egg-info/
