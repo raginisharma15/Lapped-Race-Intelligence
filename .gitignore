@@ -4,11 +4,12 @@ venv/
 __pycache__/
 *.pyc
 .env
+.env.local
+.env.*.local
 
 # Node
 node_modules/
 dist/
-.env.local
 
 # OS
 .DS_Store
